@@ -8,12 +8,5 @@ namespace Quantum.Kata.ShorsAlgorithm
     open Microsoft.Quantum.Primitive;
     open Microsoft.Quantum.Canon;
 
-	operation Oracle_AllOnes (queryRegister: Qubit[], target : Qubit) : ()
-    {
-        body
-        {
-            (Controlled X)(queryRegister, target);
-        }
-        adjoint auto;
-    }
+
 }

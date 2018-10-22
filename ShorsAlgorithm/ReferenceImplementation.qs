@@ -15,12 +15,185 @@ namespace Quantum.Kata.ShorsAlgorithm
     open Microsoft.Quantum.Primitive;
     open Microsoft.Quantum.Canon;
 
-	operation Oracle_AllOnes_Reference (queryRegister: Qubit[], target : Qubit) : ()
-    {
-        body
-        {
-            (Controlled X)(queryRegister, target);
-        }
+	function IsEven_Reference(n: Int) : Bool
+	{
+		return n % 2 == 0;
+	}
+
+	function ValidatInput_Reference(n: Int) : ()
+	{
+		if (n < 4)
+		{
+			fail "The number to factorize should be greater than 3.";
+		}
+	}
+
+	operation Coprime_Reference(n: Int, maxConsecutiveRetries: Int) : Int
+	{
+		body
+		{
+			mutable retryCount = maxConsecutiveRetries;
+			repeat {
+				let coprime = RandomInt(n - 2) + 2;
+				if (IsCoprime(coprime, n))
+				{
+					return coprime;
+				}
+				set retryCount = retryCount - 1;
+			} until (retryCount == 0)
+			fixup {
+			}
+			fail "Coprime_Reference: max retries exceeded.";
+			return -1;
+		}
+	}
+
+	function EstimationPrecision(modulus: Int) : Int
+	{
+		return 2 * BitSize(modulus) + 1;
+	}
+
+	operation OrderFindingOracle_Reference (
+        generator : Int, modulus : Int, power : Int , target : Qubit[] ) : () {
+		body {
+			ModularMultiplyByConstantLE(
+				ExpMod(generator,power,modulus),
+				modulus,
+				LittleEndian(target)
+			);
+		}
         adjoint auto;
+        controlled auto;
+        adjoint controlled auto;
     }
+
+	operation FindNumeratorOfDyadicFraction_Reference(coprime: Int, modulus: Int, maxConsecutiveRetries: Int) : Int
+	{
+		body
+		{
+			let size = BitSize(modulus);
+			let precision = EstimationPrecision(modulus);
+
+			mutable retryCount = maxConsecutiveRetries;
+			repeat {
+				mutable numerator = 0;
+				using (register = Qubit[size])
+				{
+					let registerLe = LittleEndian(register);
+					InPlaceXorLE(1, registerLe);
+					let oracle = DiscreteOracle(OrderFindingOracle_Reference(coprime, modulus, _, _));
+					let phase = RobustPhaseEstimation(precision, oracle, registerLe);
+					set numerator = Round( phase * ToDouble(2 ^ precision  ) / 2.0 / PI() ) ;
+					ResetAll(register);
+				}
+
+				if (numerator != 0)
+				{
+					return numerator;
+				}
+				set retryCount = retryCount - 1;
+			} until (retryCount == 0)
+			fixup {
+			}
+			fail "FindNumeratorOfDyadicFraction_Reference: max retries exceeded.";
+			return -1;
+		}
+	}
+
+	operation FindOrderImpl_Reference(coprime: Int, modulus: Int, maxConsecutiveRetries: Int) : Int
+	{
+		body {
+			AssertBoolEqual(
+				IsCoprime(coprime, modulus),
+				true,
+				$"The two inputs, {coprime} and {modulus}, must be coprime."
+			);
+
+			mutable result = 1;
+
+			mutable retryCount = maxConsecutiveRetries;
+			repeat {
+				let dyadicNumerator = FindNumeratorOfDyadicFraction_Reference(coprime, modulus, maxConsecutiveRetries);
+				let precision = EstimationPrecision(modulus);
+				let (x, y) = ContinuedFractionConvergent(Fraction(dyadicNumerator, 2 ^ precision), modulus);
+				let numerator = AbsI(x);
+				let period = AbsI(y);
+				set result = period * result / GCD(result, period);
+
+				if (ExpMod(coprime, result, modulus) == 1)
+				{
+					return result;
+				}
+				set retryCount = retryCount - 1;
+			} until (retryCount == 0)
+			fixup {
+			}
+			fail "FindOrderImpl_Reference: max retries exceeded.";
+			return -1;
+		}
+	}
+
+	operation FindProperCoprimeAndItsPeriod_Reference(n: Int, maxConsecutiveRetries: Int) : (Int, Int)
+	{
+		body
+		{
+			mutable retryCount = maxConsecutiveRetries;
+			repeat {
+				let coprime = Coprime_Reference(n, maxConsecutiveRetries);
+				let period = FindOrderImpl_Reference(coprime, n, maxConsecutiveRetries);
+				if (IsEven_Reference(period))
+				{
+					return (coprime, period);
+				}
+				set retryCount = retryCount - 1;
+			} until (retryCount == 0)
+			fixup {
+			}
+			fail "FindProperCoprimeAndItsPeriod_Reference: max retries exceeded.";
+			return (-1, -1);
+		}
+	}
+
+	operation CoprimePower_Reference (n : Int, maxConsecutiveRetries: Int) : Int
+	{
+		body
+		{
+			mutable retryCount = maxConsecutiveRetries;
+			repeat {
+				let (coprime, period) = FindProperCoprimeAndItsPeriod_Reference(n, maxConsecutiveRetries);
+				let x = ExpMod(coprime, period / 2, n);
+				if (x != n - 1)
+				{
+					return x;
+				}
+				set retryCount = retryCount - 1;
+			} until (retryCount == 0)
+			fixup {
+			}
+			fail "CoprimePower_Reference: max retries exceeded.";
+			return -1;
+		}
+	}
+
+	function Divisor_Reference (n: Int, coprimePower: Int) : Int
+	{
+		return MaxI(GCD(n, coprimePower - 1), GCD(n, coprimePower + 1));
+	}
+
+	operation Shor_Reference (n: Int, maxConsecutiveRetries: Int) : (Int, Int)
+	{
+		body
+		{
+			if (IsEven_Reference(n))
+			{
+				return (2, n / 2);
+			}
+			
+			ValidatInput_Reference(n);
+			
+			let power = CoprimePower_Reference(n, maxConsecutiveRetries);
+			let divisor = Divisor_Reference(n, power);
+			return (divisor, n / divisor);
+		}
+	}
 }
