@@ -20,14 +20,6 @@ namespace Quantum.Kata.ShorsAlgorithm
 		return n % 2 == 0;
 	}
 
-	function ValidatInput_Reference(n: Int) : ()
-	{
-		if (n < 4)
-		{
-			fail "The number to factorize should be greater than 3.";
-		}
-	}
-
 	operation Coprime_Reference(n: Int, maxConsecutiveRetries: Int) : Int
 	{
 		body
@@ -184,13 +176,6 @@ namespace Quantum.Kata.ShorsAlgorithm
 	{
 		body
 		{
-			if (IsEven_Reference(n))
-			{
-				return (2, n / 2);
-			}
-			
-			ValidatInput_Reference(n);
-			
 			let power = CoprimePower_Reference(n, maxConsecutiveRetries);
 			let divisor = Divisor_Reference(n, power);
 			return (divisor, n / divisor);

@@ -19,10 +19,7 @@ namespace Quantum.Kata.ShorsAlgorithm
     {
         body
         {
-			let compound = 21;
-			let maxRetries = 10;
-			let (f1, f2) = Shor_Reference(compound, maxRetries);
-			Message($"result {compound}: {f1}, {f2}");
+
         }
     }
 }
