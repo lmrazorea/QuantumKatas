@@ -22,7 +22,7 @@ namespace Quantum.Kata.ShorsAlgorithm
 
 	operation Coprime_Reference(n: Int, maxConsecutiveRetries: Int) : Int
 	{
-		body
+		body(...)
 		{
 			mutable retryCount = maxConsecutiveRetries;
 			repeat {
@@ -36,18 +36,22 @@ namespace Quantum.Kata.ShorsAlgorithm
 			fixup {
 			}
 			fail "Coprime_Reference: max retries exceeded.";
-			return -1;
 		}
 	}
 
-	function EstimationPrecision(modulus: Int) : Int
+	function ComputeControlRegisterPrecision_Reference(modulus: Int, errorRate: Double) : Int
 	{
-		return 2 * BitSize(modulus) + 1;
+		if (errorRate < 0.0) {
+			return 2 * BitSize(modulus);
+		}
+		return 2 * BitSize(modulus) + 1 + Ceiling(Log(2.0 + 1.0 / (2.0 * errorRate)));
 	}
 
 	operation OrderFindingOracle_Reference (
-        generator : Int, modulus : Int, power : Int , target : Qubit[] ) : () {
-		body {
+        generator : Int, modulus : Int, power : Int , target : Qubit[] ) : Unit
+	{
+		body(...)
+		{
 			ModularMultiplyByConstantLE(
 				ExpMod(generator,power,modulus),
 				modulus,
@@ -61,10 +65,10 @@ namespace Quantum.Kata.ShorsAlgorithm
 
 	operation FindNumeratorOfDyadicFraction_Reference(coprime: Int, modulus: Int, maxConsecutiveRetries: Int) : Int
 	{
-		body
+		body(...)
 		{
 			let size = BitSize(modulus);
-			let precision = EstimationPrecision(modulus);
+			let precision = ComputeControlRegisterPrecision_Reference(modulus, -1.0);
 
 			mutable retryCount = maxConsecutiveRetries;
 			repeat {
@@ -74,8 +78,12 @@ namespace Quantum.Kata.ShorsAlgorithm
 					let registerLe = LittleEndian(register);
 					InPlaceXorLE(1, registerLe);
 					let oracle = DiscreteOracle(OrderFindingOracle_Reference(coprime, modulus, _, _));
-					let phase = RobustPhaseEstimation(precision, oracle, registerLe);
-					set numerator = Round( phase * ToDouble(2 ^ precision  ) / 2.0 / PI() ) ;
+					using (controlRegister = Qubit[precision])
+					{
+						let controlRegisterBe = BigEndian(controlRegister);
+						QuantumPhaseEstimation(oracle, registerLe!, controlRegisterBe);
+						set numerator = MeasureIntegerBE(controlRegisterBe);
+					}
 					ResetAll(register);
 				}
 
@@ -88,13 +96,13 @@ namespace Quantum.Kata.ShorsAlgorithm
 			fixup {
 			}
 			fail "FindNumeratorOfDyadicFraction_Reference: max retries exceeded.";
-			return -1;
 		}
 	}
 
 	operation FindOrderImpl_Reference(coprime: Int, modulus: Int, maxConsecutiveRetries: Int) : Int
 	{
-		body {
+		body(...)
+		{
 			AssertBoolEqual(
 				IsCoprime(coprime, modulus),
 				true,
@@ -106,8 +114,8 @@ namespace Quantum.Kata.ShorsAlgorithm
 			mutable retryCount = maxConsecutiveRetries;
 			repeat {
 				let dyadicNumerator = FindNumeratorOfDyadicFraction_Reference(coprime, modulus, maxConsecutiveRetries);
-				let precision = EstimationPrecision(modulus);
-				let (x, y) = ContinuedFractionConvergent(Fraction(dyadicNumerator, 2 ^ precision), modulus);
+				let precision = ComputeControlRegisterPrecision_Reference(modulus, -1.0);
+				let (x, y) = (ContinuedFractionConvergent(Fraction(dyadicNumerator, 2 ^ precision), modulus))!;
 				let numerator = AbsI(x);
 				let period = AbsI(y);
 				set result = period * result / GCD(result, period);
@@ -121,13 +129,12 @@ namespace Quantum.Kata.ShorsAlgorithm
 			fixup {
 			}
 			fail "FindOrderImpl_Reference: max retries exceeded.";
-			return -1;
 		}
 	}
 
 	operation FindProperCoprimeAndItsPeriod_Reference(n: Int, maxConsecutiveRetries: Int) : (Int, Int)
 	{
-		body
+		body(...)
 		{
 			mutable retryCount = maxConsecutiveRetries;
 			repeat {
@@ -142,13 +149,12 @@ namespace Quantum.Kata.ShorsAlgorithm
 			fixup {
 			}
 			fail "FindProperCoprimeAndItsPeriod_Reference: max retries exceeded.";
-			return (-1, -1);
 		}
 	}
 
 	operation CoprimePower_Reference (n : Int, maxConsecutiveRetries: Int) : Int
 	{
-		body
+		body(...)
 		{
 			mutable retryCount = maxConsecutiveRetries;
 			repeat {
@@ -163,7 +169,6 @@ namespace Quantum.Kata.ShorsAlgorithm
 			fixup {
 			}
 			fail "CoprimePower_Reference: max retries exceeded.";
-			return -1;
 		}
 	}
 
@@ -174,7 +179,7 @@ namespace Quantum.Kata.ShorsAlgorithm
 
 	operation Shor_Reference (n: Int, maxConsecutiveRetries: Int) : (Int, Int)
 	{
-		body
+		body(...)
 		{
 			let power = CoprimePower_Reference(n, maxConsecutiveRetries);
 			let divisor = Divisor_Reference(n, power);
