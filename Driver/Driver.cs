@@ -36,7 +36,7 @@ namespace Driver
             }
         }
 
-        private static (long, long) Factorize(long compound, QuantumSimulator simulator, int maxRetries = 10, double errorRate = -1.0)
+        private static (long, long) Factorize(long compound, QuantumSimulator simulator, int maxRetries = 10)
         {
             if (compound <= 3)
             {
@@ -54,7 +54,7 @@ namespace Driver
             }
             else
             {
-                return Shor_Reference.Run(simulator, compound, maxRetries, errorRate).Result;
+                return Shor_Reference.Run(simulator, compound, maxRetries).Result;
             }
         }
 

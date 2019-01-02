@@ -47,7 +47,7 @@ namespace Quantum.Kata.ShorsAlgorithm
 		return 2 * BitSize(modulus) + 1 + Ceiling(Log(2.0 + 1.0 / (2.0 * errorRate)));
 	}
 
-	operation OrderFindingOracle_Reference (
+	operation OrderFindingOracle_Reference(
         generator : Int, modulus : Int, power : Int , target : Qubit[] ) : Unit
 	{
 		body(...)
@@ -63,7 +63,7 @@ namespace Quantum.Kata.ShorsAlgorithm
         adjoint controlled auto;
     }
 
-	operation FindNumeratorOfDyadicFraction_Reference(coprime: Int, modulus: Int, maxConsecutiveRetries: Int) : Int
+	operation EstimatePhase_Reference(coprime: Int, modulus: Int, maxConsecutiveRetries: Int) : Fraction
 	{
 		body(...)
 		{
@@ -89,46 +89,45 @@ namespace Quantum.Kata.ShorsAlgorithm
 
 				if (numerator != 0)
 				{
-					return numerator;
+					return Fraction(numerator, 2 ^ precision);
 				}
 				set retryCount = retryCount - 1;
 			} until (retryCount == 0)
 			fixup {
 			}
-			fail "FindNumeratorOfDyadicFraction_Reference: max retries exceeded.";
+			fail "EstimatePhase_Reference: max retries exceeded.";
 		}
 	}
 
-	operation FindOrderImpl_Reference(coprime: Int, modulus: Int, maxConsecutiveRetries: Int) : Int
+	operation FindPeriodOfGenerator_Reference(generator: Int, modulus: Int, maxConsecutiveRetries: Int) : Int
 	{
 		body(...)
 		{
 			AssertBoolEqual(
-				IsCoprime(coprime, modulus),
+				IsCoprime(generator, modulus),
 				true,
-				$"The two inputs, {coprime} and {modulus}, must be coprime."
+				$"The two inputs, {generator} and {modulus}, must be coprime."
 			);
 
-			mutable result = 1;
+			mutable period = 1;
 
 			mutable retryCount = maxConsecutiveRetries;
 			repeat {
-				let dyadicNumerator = FindNumeratorOfDyadicFraction_Reference(coprime, modulus, maxConsecutiveRetries);
-				let precision = ComputeControlRegisterPrecision_Reference(modulus, -1.0);
-				let (x, y) = (ContinuedFractionConvergent(Fraction(dyadicNumerator, 2 ^ precision), modulus))!;
+				let phase = EstimatePhase_Reference(generator, modulus, maxConsecutiveRetries);
+				let (x, y) = (ContinuedFractionConvergent(phase, modulus))!;
 				let numerator = AbsI(x);
-				let period = AbsI(y);
-				set result = period * result / GCD(result, period);
+				let denominator = AbsI(y);
+				set period = denominator * period / GCD(period, denominator);
 
-				if (ExpMod(coprime, result, modulus) == 1)
+				if (ExpMod(generator, period, modulus) == 1)
 				{
-					return result;
+					return period;
 				}
 				set retryCount = retryCount - 1;
 			} until (retryCount == 0)
 			fixup {
 			}
-			fail "FindOrderImpl_Reference: max retries exceeded.";
+			fail "FindPeriodOfGenerator_Reference: max retries exceeded.";
 		}
 	}
 
@@ -139,7 +138,7 @@ namespace Quantum.Kata.ShorsAlgorithm
 			mutable retryCount = maxConsecutiveRetries;
 			repeat {
 				let coprime = Coprime_Reference(n, maxConsecutiveRetries);
-				let period = FindOrderImpl_Reference(coprime, n, maxConsecutiveRetries);
+				let period = FindPeriodOfGenerator_Reference(coprime, n, maxConsecutiveRetries);
 				if (IsEven_Reference(period))
 				{
 					return (coprime, period);
@@ -172,7 +171,7 @@ namespace Quantum.Kata.ShorsAlgorithm
 		}
 	}
 
-	function Divisor_Reference (n: Int, coprimePower: Int) : Int
+	function DivisorFromCoprimePower_Reference (n: Int, coprimePower: Int) : Int
 	{
 		return MaxI(GCD(n, coprimePower - 1), GCD(n, coprimePower + 1));
 	}
@@ -182,7 +181,7 @@ namespace Quantum.Kata.ShorsAlgorithm
 		body(...)
 		{
 			let power = CoprimePower_Reference(n, maxConsecutiveRetries);
-			let divisor = Divisor_Reference(n, power);
+			let divisor = DivisorFromCoprimePower_Reference(n, power);
 			return (divisor, n / divisor);
 		}
 	}
