@@ -4,6 +4,7 @@
 using Microsoft.Quantum.Simulation.Simulators;
 using Quantum.Kata.ShorsAlgorithm;
 using System;
+using System.Diagnostics;
 
 namespace Driver
 {
@@ -11,7 +12,8 @@ namespace Driver
     {
         static void Main(string[] args)
         {
-            var numbers = new[] { 1, 2, 3, 4, 6, 8, 9, 10, 12, 15 };
+            var numbers = new[] { 15, 21, 33 };
+            Stopwatch stopwatch = new Stopwatch();
 
             using (var qsim = new QuantumSimulator())
             {
@@ -19,8 +21,11 @@ namespace Driver
                 {
                     try
                     {
+                        Console.WriteLine($"Factorising {n} ...");
+                        stopwatch.Start();
                         var (f1, f2) = Factorize(n, qsim);
-                        Console.WriteLine($"{n}: {f1}, {f2}");
+                        stopwatch.Stop();
+                        Console.WriteLine($"{n} = {f1} * {f2} -- Elapsed time: {stopwatch.Elapsed}");
                     }
                     catch (Exception e)
                     {
@@ -31,7 +36,7 @@ namespace Driver
             }
         }
 
-        private static (long, long) Factorize(long compound, QuantumSimulator simulator, int maxRetries = 10)
+        private static (long, long) Factorize(long compound, QuantumSimulator simulator, int maxRetries = 10, double errorRate = -1.0)
         {
             if (compound <= 3)
             {
@@ -40,18 +45,16 @@ namespace Driver
 
             if (IsEven(compound))
             {
-                Console.WriteLine($"Number {compound} is an even number. It has been factorized classically.");
-                return (2, compound / 2);
+                throw new ArgumentException($"Number to factorize should be odd. Input given: {compound}");
             }
 
             if (IsPerfectPower(compound, out long a, out int b))
             {
-                Console.WriteLine($"Number {compound} is a perfect power: {a}^{b}. It has been factorized classically.");
-                return (a, compound / a);
+                throw new ArgumentException($"Number to factorize should not be a perfect power. Input given: {compound} = {a}^{b}");
             }
             else
             {
-                return Shor_Reference.Run(simulator, compound, maxRetries).Result;
+                return Shor_Reference.Run(simulator, compound, maxRetries, errorRate).Result;
             }
         }
 
