@@ -12,7 +12,18 @@ namespace Quantum.Kata.ShorsAlgorithm
     // Welcome!
     //////////////////////////////////////////////////////////////////
 
-    // TODO: introduction
+    // Shor's quantum kata is a series of exercises designed to get you familiar with
+    // Shor's integer factoring algorithm.
+    // It covers the following topics:
+    //  - finding coprimes of an integer number;
+    //  - writing an oracle for determining the period of a function;
+    //  - phase estimation;
+    //  - find the period with the continued fraction technique;
+    //  - putting it all together to get an implementation of Shor's algorithm.
+    //
+    // Each task is wrapped in one function/operation preceded by the description of the task.
+    // Each task has a unit test associated with it, which initially fails. Your goal is to 
+    // fill in the blank (marked with // ... comment) with some Q# code to make the failing test pass.
 
     // Task 1.1 
     // Input:
@@ -20,6 +31,8 @@ namespace Quantum.Kata.ShorsAlgorithm
     // Goal: Implement a function to test if an integer number is even.
     function IsEven(n: Int) : Bool
     {
+        // ...
+
         // Currently, this function returns a placeholder value for the sake of being able to compile the code.
         // You will need to remove this return instruction and return a proper result.
         return true;
@@ -38,6 +51,7 @@ namespace Quantum.Kata.ShorsAlgorithm
     {
         body(...)
         {
+            // ...
 
             // Currently, this operation returns a placeholder value for the sake of being able to compile the code.
             // You will need to remove this return instruction and return a proper coprime value.
@@ -53,12 +67,14 @@ namespace Quantum.Kata.ShorsAlgorithm
     //		A size that's twice the number of bits necessary to store the number we need to factor is appropriate.
     function ComputeControlRegisterPrecision(modulus: Int) : Int
     {
+        // ...
+
         // Currently, this function returns a placeholder value for the sake of being able to compile the code.
         // You will need to remove this return instruction and return a proper result.
         return 1;
     }
 
-    // Task 2.1 Period finding oracle (aka. Order finding oracle)
+    // Task 2.1 Order finding oracle (aka. Period finding oracle)
     // Input:
     //		1) A seed for generating the transformation of the order finding oracle. The seed will be a
     //		a coprime of the number we need to factor.
@@ -68,7 +84,7 @@ namespace Quantum.Kata.ShorsAlgorithm
     //		Implement an oracle that applies the following transformation to a target qubit register |t〉:
     //		|t〉 -> |gᵖ * t (mod N)〉 where N refers to the modulus and g refers to the chosen generator.
     operation OrderFindingOracle(
-        generator : Int, modulus : Int, power : Int , target : Qubit[] ) : Unit
+        generator : Int, modulus : Int, power : Int , target : Qubit[]) : Unit
     {
         body(...)
         {
@@ -85,9 +101,9 @@ namespace Quantum.Kata.ShorsAlgorithm
     //		2) The modulus.
     //		3) The upper limit for the number of times to repeat the execution (the algorithm is probabilistic). 
     // Goal:
-    //		Estimate phase for the eigenvectors of the order finding oracle. Return the estimated phase
+    //		Estimate phase for one of the eigenvectors of the order finding oracle. Return the estimated phase
     //		as a fraction of integers.
-    // Major steps of the operation:
+    // Notes:
     //		a) Create a superposition of all the eigenvectors of the order finding oracle. This superposition
     //		is the state |1〉.
     //		b) You may use the QuantumPhaseEstimation operation from the Q# library to accomplish this task.
@@ -97,6 +113,8 @@ namespace Quantum.Kata.ShorsAlgorithm
     {
         body(...)
         {
+            // ...
+
             // Currently, this operation returns a placeholder value for the sake of being able to compile the code.
             // You will need to remove this return instruction and return a proper result.
             return Fraction(1, 1);
@@ -111,7 +129,7 @@ namespace Quantum.Kata.ShorsAlgorithm
     // Goal:
     //		Find the period of the function f(x) = gˣ mod N where N refers to the modulus and g refers to the
     //		chosen generator. Return the period.
-    // Note:
+    // Notes:
     //		1) The EstimatePhase operation returns a fraction that is equivalent to s/r where r is the period
     //		for the chosen generator.
     //		2) Use the continued fraction technique to find factors of the period r and reconstruct r from them.
@@ -125,6 +143,8 @@ namespace Quantum.Kata.ShorsAlgorithm
                 true,
                 $"The two inputs, {generator} and {modulus}, must be coprime."
             );
+
+            // ...
 
             // Currently, this operation returns a placeholder value for the sake of being able to compile the code.
             // You will need to remove this return instruction and return a proper result.
@@ -142,13 +162,15 @@ namespace Quantum.Kata.ShorsAlgorithm
     {
         body(...)
         {
+            // ...
+
             // Currently, this operation returns a placeholder value for the sake of being able to compile the code.
             // You will need to remove this return instruction and return a proper result.
             return (1, 1);
         }
     }
 
-    // Task 3.3 Coprime power mod n
+    // Task 3.3 Modulo power of the chosen coprime
     // Input:
     //		1) The number to factor.
     //		2) The upper limit for the number of times to repeat the execution (the algorithm is probabilistic).
@@ -158,6 +180,8 @@ namespace Quantum.Kata.ShorsAlgorithm
     {
         body(...)
         {
+            // ...
+
             // Currently, this operation returns a placeholder value for the sake of being able to compile the code.
             // You will need to remove this return instruction and return a proper result.
             return 1;
@@ -172,9 +196,11 @@ namespace Quantum.Kata.ShorsAlgorithm
     //	Compute a divisor of n based on the modulo power of the chosen coprime.
     function DivisorFromCoprimePower (n: Int, coprimePower: Int) : Int
     {
-            // Currently, this function returns a placeholder value for the sake of being able to compile the code.
-            // You will need to remove this return instruction and return a proper result.
-            return 1;
+        // ...
+
+        // Currently, this function returns a placeholder value for the sake of being able to compile the code.
+        // You will need to remove this return instruction and return a proper result.
+        return 1;
     }
 
     // Task 4.2 Shor's algorithm
@@ -187,6 +213,8 @@ namespace Quantum.Kata.ShorsAlgorithm
     {
         body(...)
         {
+            // ...
+
             // Currently, this operation returns a placeholder value for the sake of being able to compile the code.
             // You will need to remove this return instruction and return a proper result.
             return (1, 1);

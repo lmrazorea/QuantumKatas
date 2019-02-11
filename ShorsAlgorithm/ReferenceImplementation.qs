@@ -48,7 +48,7 @@ namespace Quantum.Kata.ShorsAlgorithm
     }
 
     operation OrderFindingOracle_Reference(
-        generator : Int, modulus : Int, power : Int , target : Qubit[] ) : Unit
+        generator : Int, modulus : Int, power : Int , target : Qubit[]) : Unit
     {
         body(...)
         {
