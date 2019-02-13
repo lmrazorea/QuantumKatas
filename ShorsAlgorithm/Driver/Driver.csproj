@@ -14,7 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\ShorsAlgorithm\ShorsAlgorithm.csproj" />
+    <ProjectReference Include="..\ShorsAlgorithm.csproj" />
   </ItemGroup>
 
 </Project>
